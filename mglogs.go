@@ -141,7 +141,7 @@ func getHandler() http.HandlerFunc {
 			fmt.Fprintf(w, "<li>%s: %s</li>\n", ts.In(loc).Format(timeFormat), stmt.GetText("content"))
 		}
 		fmt.Fprintln(w, "</ul>")
-		fmt.Fprintf(w, "<p style=\"text-align: center;\">Rendered in %d us.</p>", time.Since(start).Microseconds())
+		fmt.Fprintf(w, "<p style=\"text-align: center;\">Rendered in %d ms.</p>", time.Since(start).Milliseconds())
 		fmt.Fprintln(w, "</div>")
 		w.Header().Set("Content-Type", "text/html")
 	}
