@@ -105,7 +105,7 @@ func getHandler() http.HandlerFunc {
 		fmt.Fprintln(w, `<html lang="en">`)
 		printHTMLHead(w, "Morgan's Logs")
 		fmt.Fprintln(w, "<body>")
-		fmt.Fprintln(w, "<div style=\"width: 960px; margin: 0 auto;\">")
+		fmt.Fprintln(w, "<div style=\"max-width: 960px; margin: 0 auto;\">")
 		fmt.Fprintln(w, "<p><strong>Morgan's Logs</strong></p>")
 		fmt.Fprintln(w, "<ul>")
 		stmt := conn.Prep(`SELECT ts, content FROM logs ORDER BY datetime(ts) DESC;`)
