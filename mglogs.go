@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,8 +13,6 @@ import (
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
-
-	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -41,39 +38,6 @@ func insertLog(conn *sqlite.Conn, ts time.Time, content string) (err error) {
 	) VALUES (
 		?, ?
 	);`, nil, ts.Format(time.RFC3339), content)
-	return
-}
-
-const oldUserID = "did:ethr:0x3CBD06ce22Df5749753002798030c033B98B574a"
-
-// Only a one-time use, used to populate SQLite DB.
-func fetchFromPostgres(conn *sqlite.Conn) (err error) {
-	defer sqlitex.Save(conn)(&err)
-	var db *sql.DB
-	db, err = sql.Open("postgres", "host=localhost sslmode=disable")
-	if err != nil {
-		return
-	}
-	defer db.Close()
-	var rows *sql.Rows
-	rows, err = db.Query(`SELECT timestamp, content FROM text_logs WHERE user_id = $1;`, oldUserID)
-	if err != nil {
-		return
-	}
-	for rows.Next() {
-		var ts time.Time
-		var content string
-		if err = rows.Scan(&ts, &content); err != nil {
-			return
-		}
-		if err = insertLog(conn, ts, content); err != nil {
-			return
-		}
-	}
-	if err = rows.Close(); err != nil {
-		return
-	}
-	err = rows.Err()
 	return
 }
 
@@ -137,12 +101,12 @@ func getHandler() http.HandlerFunc {
 			return
 		}
 		defer dbpool.Put(conn)
+		loc := tz()
 		fmt.Fprintln(w, `<html lang="en">`)
 		printHTMLHead(w, "Morgan's Logs")
 		fmt.Fprintln(w, "<body>")
 		fmt.Fprintln(w, "<div style=\"width: 960px; margin: 0 auto;\">")
 		fmt.Fprintln(w, "<p><strong>Morgan's Logs</strong></p>")
-		loc := tz()
 		fmt.Fprintln(w, "<ul>")
 		stmt := conn.Prep(`SELECT ts, content FROM logs ORDER BY datetime(ts) DESC;`)
 		for {
