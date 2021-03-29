@@ -83,8 +83,6 @@ func tz() *time.Location {
 	return loc
 }
 
-const timeFormat = "2006-01-02 15:04"
-
 func printHTMLHead(w io.Writer, title string) {
 	fmt.Fprintln(w, "<head>")
 	fmt.Fprintln(w, `<meta charset="UTF-8" />`)
@@ -92,6 +90,11 @@ func printHTMLHead(w io.Writer, title string) {
 	fmt.Fprintf(w, "<title>%s</title>", title)
 	fmt.Fprintln(w, "</head>")
 }
+
+const (
+	dayFormat  = "2006-01-02"
+	timeFormat = "15:04"
+)
 
 func getHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -109,7 +112,7 @@ func getHandler() http.HandlerFunc {
 		fmt.Fprintln(w, "<p><strong>Morgan's Logs</strong></p>")
 		fmt.Fprintln(w, "<ul>")
 		stmt := conn.Prep(`SELECT ts, content FROM logs ORDER BY datetime(ts) DESC;`)
-		var count int
+		var count, prevday int
 		for {
 			if hasNext, err := stmt.Step(); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -122,7 +125,12 @@ func getHandler() http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			fmt.Fprintf(w, "<li>%s: %s</li>\n", ts.In(loc).Format(timeFormat), stmt.GetText("content"))
+			ts = ts.In(loc)
+			if day := ts.Day(); day != prevday {
+				fmt.Fprintf(w, "<p>%s</p>", ts.Format(dayFormat))
+				prevday = day
+			}
+			fmt.Fprintf(w, "<li>%s: %s</li>\n", ts.Format(timeFormat), stmt.GetText("content"))
 			count++
 		}
 		fmt.Fprintln(w, "</ul>")
