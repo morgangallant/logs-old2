@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"runtime"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -75,7 +77,13 @@ func fetchFromPostgres(conn *sqlite.Conn) (err error) {
 	return
 }
 
-const dbpath = "/root/storage/mglogs.db"
+func dbpath() string {
+	// For local environments.
+	if runtime.GOOS == "darwin" {
+		return "mglogs.db"
+	}
+	return "/root/storage/mglogs.db"
+}
 
 const addr = ":11108"
 
@@ -83,7 +91,7 @@ var dbpool *sqlitex.Pool
 
 func run() error {
 	var err error
-	dbpool, err = sqlitex.Open(dbpath, 0, 10)
+	dbpool, err = sqlitex.Open(dbpath(), 0, 10)
 	if err != nil {
 		return err
 	}
@@ -113,6 +121,14 @@ func tz() *time.Location {
 
 const timeFormat = "2006-01-02 15:04"
 
+func printHTMLHead(w io.Writer, title string) {
+	fmt.Fprintln(w, "<head>")
+	fmt.Fprintln(w, `<meta charset="UTF-8" />`)
+	fmt.Fprintln(w, `<meta name="viewport" content="width=device-width, initial-scale=1.0" />`)
+	fmt.Fprintf(w, "<title>%s</title>", title)
+	fmt.Fprintln(w, "</head>")
+}
+
 func getHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -121,6 +137,9 @@ func getHandler() http.HandlerFunc {
 			return
 		}
 		defer dbpool.Put(conn)
+		fmt.Fprintln(w, `<html lang="en">`)
+		printHTMLHead(w, "Morgan's Logs")
+		fmt.Fprintln(w, "<body>")
 		fmt.Fprintln(w, "<div style=\"width: 960px; margin: 0 auto;\">")
 		fmt.Fprintln(w, "<p><strong>Morgan's Logs</strong></p>")
 		loc := tz()
@@ -143,6 +162,8 @@ func getHandler() http.HandlerFunc {
 		fmt.Fprintln(w, "</ul>")
 		fmt.Fprintf(w, "<p style=\"text-align: center;\">Rendered in %d ms.</p>", time.Since(start).Milliseconds())
 		fmt.Fprintln(w, "</div>")
+		fmt.Fprintln(w, "</body>")
+		fmt.Fprintln(w, "</html>")
 		w.Header().Set("Content-Type", "text/html")
 	}
 }
