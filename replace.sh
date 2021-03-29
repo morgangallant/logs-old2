@@ -1,7 +1,7 @@
 #!/bin/bash
 
-git clone https://github.com/morgangallant/mglogs.git /root/mglogs
 cd /root/mglogs
+git pull origin trunk
 rm -rf mglogs
 go build -o mglogs .
 if [ ! -f mglogs ]; then
