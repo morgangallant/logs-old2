@@ -110,6 +110,7 @@ func getHandler() http.HandlerFunc {
 		fmt.Fprintln(w, "<body>")
 		fmt.Fprintln(w, "<div style=\"max-width: 960px; margin: 0 auto;\">")
 		fmt.Fprintln(w, "<p><strong>Morgan's Logs</strong></p>")
+		fmt.Fprintf(w, "<p>Current TZ: %s.</p>\n", currentTimezone)
 		fmt.Fprintln(w, "<ul>")
 		stmt := conn.Prep(`SELECT ts, content FROM logs ORDER BY datetime(ts) DESC;`)
 		var count, prevday int
@@ -127,7 +128,7 @@ func getHandler() http.HandlerFunc {
 			}
 			ts = ts.In(loc)
 			if day := ts.Day(); day != prevday {
-				fmt.Fprintf(w, "<p>%s</p>", ts.Format(dayFormat))
+				fmt.Fprintf(w, "<p>%s</p>\n", ts.Format(dayFormat))
 				prevday = day
 			}
 			fmt.Fprintf(w, "<li>%s: %s</li>\n", ts.Format(timeFormat), stmt.GetText("content"))
