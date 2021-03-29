@@ -9,7 +9,7 @@ if [ ! -f mglogs ]; then
   exit
 fi
 echo "deploying"
-# systemctl stop mglogs
+systemctl stop mglogs
 mv mglogs /root/servers/mglogs
-# systemctl start mglogs
+systemctl start mglogs
 echo "done"
