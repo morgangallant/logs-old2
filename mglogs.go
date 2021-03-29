@@ -109,6 +109,7 @@ func getHandler() http.HandlerFunc {
 		fmt.Fprintln(w, "<p><strong>Morgan's Logs</strong></p>")
 		fmt.Fprintln(w, "<ul>")
 		stmt := conn.Prep(`SELECT ts, content FROM logs ORDER BY datetime(ts) DESC;`)
+		var count int
 		for {
 			if hasNext, err := stmt.Step(); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -122,9 +123,10 @@ func getHandler() http.HandlerFunc {
 				return
 			}
 			fmt.Fprintf(w, "<li>%s: %s</li>\n", ts.In(loc).Format(timeFormat), stmt.GetText("content"))
+			count++
 		}
 		fmt.Fprintln(w, "</ul>")
-		fmt.Fprintf(w, "<p style=\"text-align: center;\">Rendered in %d ms.</p>", time.Since(start).Milliseconds())
+		fmt.Fprintf(w, "<p style=\"text-align: center;\">Rendered %d logs in %d ms.</p>", count, time.Since(start).Milliseconds())
 		fmt.Fprintln(w, "</div>")
 		fmt.Fprintln(w, "</body>")
 		fmt.Fprintln(w, "</html>")
