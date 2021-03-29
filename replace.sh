@@ -1,5 +1,6 @@
 #!/bin/bash
 
+git clone https://github.com/morgangallant/mglogs.git /root/mglogs
 cd /root/mglogs
 rm -rf mglogs
 go build -o mglogs .
