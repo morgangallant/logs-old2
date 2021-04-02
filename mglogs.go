@@ -8,12 +8,30 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"runtime"
 	"time"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 )
+
+var (
+	key      string
+	username string
+)
+
+func init() {
+	var ok bool
+	key, ok = os.LookupEnv("TELEGRAM_KEY")
+	if !ok {
+		panic("missing TELEGRAM_KEY environment variable")
+	}
+	username, ok = os.LookupEnv("TELEGRAM_USERNAME")
+	if !ok {
+		panic("missing TELEGRAM_USERNAME environment variable")
+	}
+}
 
 func main() {
 	if err := run(); err != nil {
@@ -168,12 +186,16 @@ func telegramHandler() http.HandlerFunc {
 			return
 		}
 		defer dbpool.Put(conn)
+		if whkeys, ok := r.URL.Query()["key"]; !ok || len(whkeys) == 0 || whkeys[0] != key {
+			http.Error(w, "invalid key", http.StatusUnauthorized)
+			return
+		}
 		var wh webhook
 		if err := json.NewDecoder(r.Body).Decode(&wh); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if wh.Message.From.Username != "MorganGallant" {
+		if wh.Message.From.Username != username {
 			// Ignore.
 			return
 		}
