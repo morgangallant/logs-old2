@@ -7,6 +7,8 @@ Type=simple
 User=root
 Restart=on-failure
 ExecStart=/root/servers/mglogs
+Environment="TELEGRAM_USERNAME=XXX"
+Environment="TELEGRAM_KEY=XXX"
 
 [Install]
 WantedBy=multi-user.target
