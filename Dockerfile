@@ -2,7 +2,6 @@
 FROM golang:1.16 as build
 ADD . /src
 WORKDIR /src/
-RUN go get .
 RUN go build -o server logs/server.go
 
 # Run Step using Distroless.
