@@ -1,0 +1,3 @@
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https%3A%2F%2Fgithub.com%2Fmorgangallant%2Flogs&plugins=postgresql&envs=TELEGRAM_USERNAME%2CTELEGRAM_SECRET%2COWNER_NAME&optionalEnvs=OWNER_NAME&TELEGRAM_USERNAMEDesc=Your+telegram+username.&TELEGRAM_SECRETDesc=The+generated+telegram+secret.&OWNER_NAMEDesc=Your+name%2C+will+be+displayed+on+website.&OWNER_NAMEDefault=John+Doe)
+
+This is the underlying implemention behind my [Logs Infrastructure](https://logs.morgangallant.com). Using the Deploy on Railway button, you can easily setup your own logs server (for free).
