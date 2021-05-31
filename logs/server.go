@@ -39,7 +39,7 @@ var (
 
 func init() {
 	_ = godotenv.Load()
-	databaseUrl = must("DATABASE_URL")
+	databaseUrl = must("DATABASE_URL") + "?sslmode=disable"
 	lport = fallback("PORT", "8080")
 	telegramUsername = must("TELEGRAM_USERNAME")
 	telegramSecret = must("TELEGRAM_SECRET")
