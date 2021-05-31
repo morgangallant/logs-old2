@@ -154,6 +154,7 @@ func getHandler(db *sql.DB) http.HandlerFunc {
 		fmt.Fprintln(w, "</body>")
 		fmt.Fprintln(w, "</html>")
 		w.Header().Set("Content-Type", "text/html")
+		logger.Println("Served web request.")
 	}
 }
 
@@ -193,6 +194,8 @@ func telegramHandler(db *sql.DB) http.HandlerFunc {
 		l := log{ts: time.Now(), content: wh.Message.Text}
 		if err := insertLog(db, l); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
+		logger.Println("Ingested log.")
 	}
 }
