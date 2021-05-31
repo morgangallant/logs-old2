@@ -35,6 +35,7 @@ var (
 	telegramUsername string
 	telegramSecret   string
 	ownerName        string
+	timezone         string
 )
 
 func init() {
@@ -44,6 +45,7 @@ func init() {
 	telegramUsername = must("TELEGRAM_USERNAME")
 	telegramSecret = must("TELEGRAM_SECRET")
 	ownerName = fallback("OWNER_NAME", "John Doe")
+	timezone = fallback("TIMEZONE", "America/New_York")
 }
 
 func main() {
@@ -108,8 +110,6 @@ func insertLog(db *sql.DB, l log) error {
 	}
 	return nil
 }
-
-const timezone = "America/Toronto"
 
 const (
 	dayFormat  = "2006-01-02"
