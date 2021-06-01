@@ -179,20 +179,24 @@ func telegramHandler(db *sql.DB) http.HandlerFunc {
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		if whkeys, ok := r.URL.Query()["key"]; !ok || len(whkeys) == 0 || whkeys[0] != telegramSecret {
+			logger.Println("Invalid key.")
 			http.Error(w, "invalid secret key", http.StatusUnauthorized)
 			return
 		}
 		var wh webhook
 		if err := json.NewDecoder(r.Body).Decode(&wh); err != nil {
+			logger.Println("Failed to decode request from Telegram.")
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		if wh.Message.From.Username != telegramUsername {
+			logger.Printf("Expected username %s, got %s.", telegramUsername, wh.Message.From.Username)
 			// If this message is from an unknown sender, ignore it.
 			return
 		}
 		l := log{ts: time.Now(), content: wh.Message.Text}
 		if err := insertLog(db, l); err != nil {
+			logger.Printf("Failed to insert new log: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
