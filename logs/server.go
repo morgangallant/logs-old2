@@ -113,7 +113,7 @@ func insertLog(db *sql.DB, l log) error {
 
 const (
 	dayFormat  = "2006-01-02"
-	timeFormat = "15:04"
+	timeFormat = "3:04 PM"
 )
 
 func getHandler(db *sql.DB) http.HandlerFunc {
@@ -146,7 +146,7 @@ func getHandler(db *sql.DB) http.HandlerFunc {
 				fmt.Fprintf(w, "<p>%s</p>\n", ts.Format(dayFormat))
 				prevday = day
 			}
-			fmt.Fprintf(w, "<li>%s: %s</li>\n", ts.Format(timeFormat), l.content)
+			fmt.Fprintf(w, "<li>(%s) %s</li>\n", ts.Format(timeFormat), l.content)
 		}
 		fmt.Fprintln(w, "</ul>")
 		fmt.Fprintf(w, "<p style=\"text-align: center;\">Rendered %d logs in %d ms.</p>", len(logs), time.Since(start).Milliseconds())
