@@ -73,6 +73,7 @@ func run() error {
 		return err
 	}
 	http.HandleFunc("/", getHandler(db))
+	http.HandleFunc("/json", jsonHandler(db))
 	http.HandleFunc("/_wh/telegram", telegramHandler(db))
 	return http.ListenAndServe(":"+lport, nil)
 }
@@ -155,6 +156,37 @@ func getHandler(db *sql.DB) http.HandlerFunc {
 		fmt.Fprintln(w, "</html>")
 		w.Header().Set("Content-Type", "text/html")
 		logger.Println("Served web request.")
+	}
+}
+
+func jsonHandler(db *sql.DB) http.HandlerFunc {
+	type log struct {
+		Timestamp time.Time `json:"timestamp"`
+		Content   string    `json:"content"`
+	}
+	type response struct {
+		Logs []log `json:"logs"`
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		logs, err := fetchLogs(db)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		rbody := response{
+			Logs: make([]log, len(logs)),
+		}
+		for i, l := range logs {
+			rbody.Logs[i] = log{
+				Timestamp: l.ts,
+				Content:   l.content,
+			}
+		}
+		if err := json.NewEncoder(w).Encode(rbody); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		logger.Println("Served API request.")
 	}
 }
 
